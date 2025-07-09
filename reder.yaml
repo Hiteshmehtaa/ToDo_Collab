@@ -1,0 +1,29 @@
+services:
+  # Backend API Service
+  - type: web
+    name: taskflow-pro-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: PORT
+        value: 10000
+
+  # Frontend Static Site
+  - type: web
+    name: taskflow-pro-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: taskflow-pro-api
+          property: host
