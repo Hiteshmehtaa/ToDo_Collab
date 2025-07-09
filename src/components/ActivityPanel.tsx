@@ -4,6 +4,9 @@ import { Activity, X, Clock, User, Plus, Edit, Trash, Move, Zap } from 'lucide-r
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? '' : 'http://localhost:3001'
+);
 interface ActivityItem {
   _id: string;
   action: string;
@@ -50,7 +53,7 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isOpen, onClose }) => {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3001/api/activity');
+      const response = await axios.get(`${API_BASE_URL}/api/activity`);
       setActivities(response.data);
     } catch (error) {
       console.error('Error fetching activities:', error);

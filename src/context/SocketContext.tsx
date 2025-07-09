@@ -2,6 +2,9 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+const SOCKET_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? window.location.origin : 'http://localhost:3001'
+);
 interface SocketContextType {
   socket: Socket | null;
   connected: boolean;
@@ -28,7 +31,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (token && user) {
-      const newSocket = io('http://localhost:3001', {
+      const newSocket = io(SOCKET_URL, {
         auth: {
           token
         }

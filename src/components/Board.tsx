@@ -12,6 +12,9 @@ import TaskModal from './TaskModal';
 import ActivityPanel from './ActivityPanel';
 import ProfileModal from './ProfileModal';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? '' : 'http://localhost:3001'
+);
 interface Task {
   _id: string;
   title: string;
@@ -79,7 +82,7 @@ const Board: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/tasks');
+      const response = await axios.get(`${API_BASE_URL}/api/tasks`);
       setTasks(response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -90,7 +93,7 @@ const Board: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/tasks/users');
+      const response = await axios.get(`${API_BASE_URL}/api/tasks/users`);
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -99,7 +102,7 @@ const Board: React.FC = () => {
 
   const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/tasks', taskData);
+      const response = await axios.post(`${API_BASE_URL}/api/tasks`, taskData);
       setTasks(prev => [response.data, ...prev]);
       
       if (socket) {
@@ -114,7 +117,7 @@ const Board: React.FC = () => {
     if (!editingTask) return;
 
     try {
-      const response = await axios.put(`http://localhost:3001/api/tasks/${editingTask._id}`, taskData);
+      const response = await axios.put(`${API_BASE_URL}/api/tasks/${editingTask._id}`, taskData);
       setTasks(prev => prev.map(task => 
         task._id === editingTask._id ? response.data : task
       ));
@@ -133,7 +136,7 @@ const Board: React.FC = () => {
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
-      await axios.delete(`http://localhost:3001/api/tasks/${taskId}`);
+      await axios.delete(`${API_BASE_URL}/api/tasks/${taskId}`);
       setTasks(prev => prev.filter(task => task._id !== taskId));
       
       if (socket) {
@@ -146,7 +149,7 @@ const Board: React.FC = () => {
 
   const handleDrop = async (taskId: string, newStatus: string) => {
     try {
-      const response = await axios.put(`http://localhost:3001/api/tasks/${taskId}`, {
+      const response = await axios.put(`${API_BASE_URL}/api/tasks/${taskId}`, {
         status: newStatus
       });
       
@@ -164,7 +167,7 @@ const Board: React.FC = () => {
 
   const handleSmartAssign = async (taskId: string) => {
     try {
-      const response = await axios.post(`http://localhost:3001/api/tasks/${taskId}/smart-assign`);
+      const response = await axios.post(`${API_BASE_URL}/api/tasks/${taskId}/smart-assign`);
       setTasks(prev => prev.map(task => 
         task._id === taskId ? response.data : task
       ));

@@ -4,6 +4,8 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
 import activityRoutes from './routes/activity.js';
@@ -11,11 +13,13 @@ import { authenticateSocket } from './middleware/auth.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.NODE_ENV === 'production' ? false : "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
@@ -24,8 +28,12 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from React build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+}
 // MongoDB connection
-const MONGODB_URI = 'mongodb+srv://mhitesh059:mhitesh059@cluster0.0wnawjo.mongodb.net/collaborative-todo?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mhitesh059:mhitesh059@cluster0.0wnawjo.mongodb.net/collaborative-todo?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -36,6 +44,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/activity', activityRoutes);
 
+// Serve React app for all non-API routes in production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
 // Socket.IO connection handling
 const connectedUsers = new Map();
 
@@ -79,6 +93,12 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`App available at: http://localhost:${PORT}`);
+  } else {
+    console.log(`API server: http://localhost:${PORT}`);
+    console.log(`Frontend dev server: http://localhost:5173`);
+  }
 });
 
 export { io };

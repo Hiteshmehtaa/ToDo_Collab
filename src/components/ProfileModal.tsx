@@ -4,6 +4,9 @@ import { X, Camera, Save, User, Mail, Upload } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? '' : 'http://localhost:3001'
+);
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,7 +41,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await axios.put('http://localhost:3001/api/auth/profile', formData);
+      const response = await axios.put(`${API_BASE_URL}/api/auth/profile`, formData);
       updateUser(response.data.user);
       onClose();
     } catch (err: any) {
